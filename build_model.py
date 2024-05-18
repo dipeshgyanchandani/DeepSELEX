@@ -27,6 +27,8 @@ def manage_model(cmd_args, train_data):
     elif cmd_args.saved_model_location:
         model = Model(model_path=cmd_args.saved_model_location, input_shape=(train_data.selex_str_len, 4),
                       output_size=train_data.selex_files_num)
+        print(train_data.shape)
+        print(train_data.selex_str_len.shape)
         model.create_model()
         model.model_train_and_save(data=train_data)
         return model.model

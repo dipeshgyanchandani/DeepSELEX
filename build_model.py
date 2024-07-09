@@ -134,6 +134,15 @@ class Model:
                                                                  verbose=0, mode='auto', restore_best_weights=True)
                                    ])
 
+    def reshape_one_hot_data(data):
+        # Convert the 1D array of 2D arrays into a single 3D array -- Dipesh
+        if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
+            data.one_hot_data = np.array(list(data.one_hot_data))
+        else:
+            raise ValueError("data.one_hot_data is not in the expected format.")
+
+        return data.one_hot_data
+
     def data_divider(self, data, datasets=3):
         """Divide the data set into 3 (datasets) independent sets
         We found out this is the best way to train a model so it wont fit to the
@@ -146,6 +155,11 @@ class Model:
         datasets : int
             This is the data object which we will divide
         """
+
+        # Reshape one_hot_data if it's not 3-dimensional -- Dipesh
+        if len(data.one_hot_data.shape) != 3:
+            data.one_hot_data = self.reshape_one_hot_data(data)
+
         splitted_train_data = []
         splitted_test_data = []
         for i in range(0, datasets):

@@ -106,7 +106,7 @@ class Model:
         for layer_size in self.model_params_dict['layers']:
             print(f'the layer size is: {layer_size}')
             self.model.add(Dense(layer_size, activation='relu'))
-
+        print("======>", self.output_size)
         self.model.add(Dense(self.output_size, activation=self.model_params_dict['final_activation_function']))
 
     def model_train_and_save(self, data):

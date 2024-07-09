@@ -111,10 +111,10 @@ class TrainData:
 
         # if the "ACGT"
         # won't be added it will be impossible to convert sequnces which miss one of the letters
-        DNA_string = start_linker + DNA_string + end_linker + "ACGTN" #Dipesh_changes
-        trantab = DNA_string.maketrans('ACGTN', '01234') #dipesh_changes
+        DNA_string = start_linker + DNA_string + end_linker + "ACGT"
+        trantab = DNA_string.maketrans('ACGT', '0123')
         data = list(DNA_string.translate(trantab))
-        return to_categorical(data)[0:-5]  # returns the matrix without the "ACGT" #dipesh_changes
+        return to_categorical(data)[0:-4]  # returns the matrix without the "ACGT"
 
     def linker_quarter_padding(self, modified_matrix):
         """If the user did not supplied primary_selex_sequence please note that we added:
@@ -212,20 +212,20 @@ class PredictData:
         if self.selex_predict_str_adaptor != 0:
             DNA_string = "A" * self.selex_predict_str_adaptor + DNA_string + 'A' * self.selex_predict_str_adaptor
 
-        trantab = DNA_string.maketrans('ACGTN', '01234') #dipesh_changes
+        trantab = DNA_string.maketrans('ACGT', '0123')
         str_arr = ["" for x in range(self.num_of_str)]
         for i in range(0, self.num_of_str):  ##each substring goes to different element array
             str_arr[i] = DNA_string[i: i + self.selex_str_len]
 
         # if the "ACGT"
         # won't be added it will be impossible to convert sequnces which miss one of the letters
-        str_arr[self.num_of_str - 1] = str_arr[self.num_of_str - 1] + "ACGTN" #dipesh_changes
+        str_arr[self.num_of_str - 1] = str_arr[self.num_of_str - 1] + "ACGT"
 
         final_str = list("")
         for i in range(0, self.num_of_str):
             final_str += list(str_arr[i].translate(trantab))
 
-        return to_categorical(final_str)[0:-5]  # returns the matrix without the "ACGT" #dipesh_changes
+        return to_categorical(final_str)[0:-4]  # returns the matrix without the "ACGT"
 
     def set_redundant_linker_to_avergae(self, modified_matrix):
         """If we need to bridge between the prediction file sequences to the HT-SELEX sequences
@@ -297,10 +297,3 @@ def prediction_data_constructor(prediction_file, model_input_size):
         prediction_data = PredictData(selex_str_len=model_input_size, predict_str_len=len(prediction_file.raw_data['DNA_Id'].iloc[0]))
         prediction_data.set_one_hot_matrix(dna_data=prediction_file.raw_data['DNA_Id'])
     return prediction_data
-
-
-
-
-
-
-

@@ -78,6 +78,7 @@ class TrainData:
                   f' and the end linker is: {end_linker[:self.linker_sequence_length]}')
         else:
             self.one_hot_data = self.linker_quarter_padding(modified_matrix=self.one_hot_data)
+            print("====Inside create_data::self.one_hot_data:", self.one_hot_data.shape)
 
     def set_enrichment_matrix(self, enrichment_data):
         """Create the enrichment matrix to suit as the model label.

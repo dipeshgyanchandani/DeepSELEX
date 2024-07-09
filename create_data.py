@@ -111,8 +111,8 @@ class TrainData:
 
         # if the "ACGT"
         # won't be added it will be impossible to convert sequnces which miss one of the letters
-        DNA_string = start_linker + DNA_string + end_linker + "ACGT"
-        trantab = DNA_string.maketrans('ACGT', '0123')
+        DNA_string = start_linker + DNA_string + end_linker + "ACGTN" #Dipesh_changes
+        trantab = DNA_string.maketrans('ACGTN', '01234') #dipesh_changes
         data = list(DNA_string.translate(trantab))
         return to_categorical(data)[0:-4]  # returns the matrix without the "ACGT"
 

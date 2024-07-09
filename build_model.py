@@ -150,6 +150,7 @@ class Model:
         splitted_test_data = []
         for i in range(0, datasets):
             print("=======", data.one_hot_data.shape)
+            print("=======", data.one_hot_data[0].shape)
             print('the ranges in {i} are: {low}, {high}'.format(i=i,low=round((i/datasets)*len(data.one_hot_data)),high=round(((i+1)/datasets) * len(data.one_hot_data))))
             splitted_train_data.append(data.one_hot_data[round((i/datasets)*len(data.one_hot_data)):round(((i+1)/datasets) * len(data.one_hot_data)), :, :])
             splitted_test_data.append(data.enrichment_matrix[round((i/datasets)*len(data.enrichment_matrix)):round(((i+1)/datasets) * len(data.enrichment_matrix))])

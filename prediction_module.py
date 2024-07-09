@@ -13,6 +13,7 @@ def predict_prediction_file(model, data, cmd_args):
 
     if cmd_args.output_file_location:
         prediction = prediction_loop(model, data)
+        print("========prediction:", prediction)
         max_last_4 = np.amax(prediction[-1], 1)
         max_last_3 = np.amax(prediction[-2], 1)
         min_first_0 = np.amin(prediction[0], 1)

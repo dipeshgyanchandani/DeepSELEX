@@ -136,6 +136,7 @@ class Model:
 
     def reshape_one_hot_data(self, data):
         # Convert the 1D array of 2D arrays into a single 3D array -- Dipesh
+        print("=====> Inside reshape one hot data..")
         if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
             data.one_hot_data = np.array(list(data.one_hot_data))
         else:

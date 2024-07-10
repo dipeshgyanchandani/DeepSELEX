@@ -157,7 +157,8 @@ class Model:
         datasets : int
             This is the data object which we will divide
         """
-
+        print("BEFORE=======", data.one_hot_data.shape)
+        print("BEFORE=======", data.one_hot_data[0].shape)
         # Reshape one_hot_data if it's not 3-dimensional -- Dipesh
         if len(data.one_hot_data.shape) != 3:
             data.one_hot_data = self.reshape_one_hot_data(data)

@@ -134,14 +134,26 @@ class Model:
                                                                  verbose=0, mode='auto', restore_best_weights=True)
                                    ])
 
+    # def reshape_one_hot_data(self, data):
+    #     # Convert the 1D array of 2D arrays into a single 3D array -- Dipesh
+    #     print("=====> Inside reshape one hot data..")
+    #     if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
+    #         data.one_hot_data = np.array(list(data.one_hot_data))
+    #     else:
+    #         raise ValueError("data.one_hot_data is not in the expected format.")
+
+    #     return data.one_hot_data
+            
     def reshape_one_hot_data(self, data):
-        # Convert the 1D array of 2D arrays into a single 3D array -- Dipesh
         print("=====> Inside reshape one hot data..")
         if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
-            data.one_hot_data = np.array(list(data.one_hot_data))
+            # Determine the maximum length of sequences
+            max_len = max(seq.shape[0] for seq in data.one_hot_data)
+            # Pad sequences to the maximum length
+            padded_sequences = pad_sequences(data.one_hot_data, maxlen=max_len, padding='post', truncating='post', dtype='float32')
+            data.one_hot_data = np.array(padded_sequences)
         else:
             raise ValueError("data.one_hot_data is not in the expected format.")
-
         return data.one_hot_data
 
     def data_divider(self, data, datasets=3):

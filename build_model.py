@@ -138,8 +138,7 @@ class Model:
         # Convert the 1D array of 2D arrays into a single 3D array -- Dipesh
         print("=====> Inside reshape one hot data..")
         if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
-            consistent_shape = data.one_hot_data[0].shape  # Assume all sequences should have this shape
-            data.one_hot_data = np.array([np.reshape(seq, consistent_shape) for seq in data.one_hot_data], dtype=np.float32)
+            data.one_hot_data = np.array(list(data.one_hot_data))
         else:
             raise ValueError("data.one_hot_data is not in the expected format.")
 

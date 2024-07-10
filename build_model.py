@@ -148,11 +148,10 @@ class Model:
             
     def reshape_one_hot_data(self, data):
         print("=====> Inside reshape one hot data..")
+        target_shape = (259, 4)
         if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
-            # Determine the maximum length of sequences
-            max_len = max(seq.shape[0] for seq in data.one_hot_data)
-            # Pad sequences to the maximum length
-            padded_sequences = pad_sequences(data.one_hot_data, maxlen=max_len, padding='post', truncating='post', dtype='float32')
+            # Pad sequences to the target length
+            padded_sequences = pad_sequences(data.one_hot_data, maxlen=target_shape[0], padding='post', truncating='post', dtype='float32')
             data.one_hot_data = np.array(padded_sequences)
         else:
             raise ValueError("data.one_hot_data is not in the expected format.")

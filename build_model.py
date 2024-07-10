@@ -9,6 +9,8 @@ from keras.callbacks import *
 from keras.regularizers import *
 from keras.models import Sequential
 from keras.models import load_model
+from keras.preprocessing.sequence import pad_sequences
+
 
 def manage_model(cmd_args, train_data):
     """If the user wants to train a model this function will train and return a model

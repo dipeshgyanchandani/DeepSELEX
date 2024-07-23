@@ -120,6 +120,7 @@ class PredictionFile(File):
         try:
             return pd.read_csv(self.address, sep="\t",
                         header=None,
+                        engine='python',
                         names=['DNA_Id'])
         except FileNotFoundError:
             raise FileNotFoundError(f'check if the address: {self.address} contains the desired file')

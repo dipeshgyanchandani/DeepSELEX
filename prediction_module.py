@@ -51,11 +51,11 @@ def prediction_loop(model, data):
     ht_str_len = model.layers[0].input_shape[1]
     matrix = []
     selex_files_num = model.layers[-1].output_shape[1]
-    for i in range(0,files_num):
+    for i in range(0, files_num):
         matrix.append(np.asarray([[0.5 for i in range(0, data.one_hot_data.shape[0])] for j in range(data.num_of_str)]).T)
 
-
     for i in range(0, data.num_of_str):
+        print("====Inside prediction_loop::data.one_hot_data.shape:", data.one_hot_data.shape)
         predictions = model.predict(data.one_hot_data[:, data.selex_str_len * i:data.selex_str_len * (i + 1), :])
         for index in range(0, selex_files_num):
             matrix[index][:, i] = predictions[:, index]

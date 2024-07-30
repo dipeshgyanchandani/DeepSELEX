@@ -66,9 +66,12 @@ class TrainData:
         start_linker, end_linker = read_files.selex_linker_sequence(file_address='selex_linker_flie.xlsx',
                                                                     primary_selex_sequence=primary_selex_sequence)
 
-        self.one_hot_data = np.array(
-            list(map(functools.partial(self.one_hot_encoder, start_linker=start_linker,
-                                       end_linker=end_linker), dna_data)))
+        one_hot_encoded_data = list(map(functools.partial(self.one_hot_encoder, start_linker=start_linker,
+                                                          end_linker=end_linker), dna_data))
+        max_length = max([len(seq) for seq in one_hot_encoded_data])
+        padded_one_hot_data = np.array([np.pad(seq, ((0, max_length - len(seq)), (0, 0)), mode='constant', constant_values=0.25)
+                                        for seq in one_hot_encoded_data])
+        self.one_hot_data = padded_one_hot_data
 
         print("====Inside set_one_hot_matrix::self.one_hot_data.shape:", self.one_hot_data.shape)
         if start_linker:
@@ -181,7 +184,7 @@ class PredictData:
         self.one_hot_data = None
 
     def set_one_hot_matrix(self, dna_data):
-        """This method is responsible to produce the OneHot
+        """this method is responsible to produce the OneHot
         encoding for the DNA strings.
         The OneHot matrix is used for the convolutional process
         If we need to bridge between the prediction to HT-SELEX sequences we will use
@@ -191,7 +194,12 @@ class PredictData:
         dna_data : DataFrame
             This is the DNA sequences from the HT-SELEX experiment"""
 
-        self.one_hot_data = np.array(list(map(functools.partial(self.one_hot_encoder), dna_data)))
+        one_hot_encoded_data = list(map(self.one_hot_encoder, dna_data))
+        max_length = max([len(seq) for seq in one_hot_encoded_data])
+        padded_one_hot_data = np.array([np.pad(seq, ((0, max_length - len(seq)), (0, 0)), mode='constant', constant_values=0.25)
+                                        for seq in one_hot_encoded_data])
+        self.one_hot_data = padded_one_hot_data
+
         print("====Inside set_one_hot_matrix (PredictData)::self.one_hot_data.shape:", self.one_hot_data.shape)
         if self.selex_predict_str_adaptor > 0:
             self.one_hot_data = self.set_redundant_linker_to_avergae(modified_matrix=self.one_hot_data)
@@ -216,7 +224,10 @@ class PredictData:
         for i in range(0, self.num_of_str):  ##each substring goes to different element array
             str_arr[i] = DNA_string[i: i + self.selex_str_len]
 
+        # if the "ACGTN"
+        # won't be added it will be impossible to convert sequences which miss one of the letters
         str_arr[self.num_of_str - 1] = str_arr[self.num_of_str - 1] + "ACGTN"
+
         final_str = list("")
         for i in range(0, self.num_of_str):
             final_str += list(str_arr[i].translate(trantab))

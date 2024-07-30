@@ -55,24 +55,22 @@ class TrainData:
         1. first fetch the two linker sequence
         2. construct the OneHot matrix with the appropriate linker size.
 
-
         Parameters
         ----------
         dna_data : DataFrame
             This is the DNA sequences from the HT-SELEX experiment
         primary_selex_sequence : str
-        the sequence which is the HT-SELEX experiment primary sequence.
-        If the selex file is of the form: ALX4_TGTGTC20NGA_W_0.fastq, the primary sequence is: TGTGTC20NGA
+            The sequence which is the HT-SELEX experiment primary sequence.
+            If the selex file is of the form: ALX4_TGTGTC20NGA_W_0.fastq, the primary sequence is: TGTGTC20NGA
         """
-
         start_linker, end_linker = read_files.selex_linker_sequence(file_address='selex_linker_flie.xlsx',
                                                                     primary_selex_sequence=primary_selex_sequence)
-
 
         self.one_hot_data = np.array(
             list(map(functools.partial(self.one_hot_encoder, start_linker=start_linker,
                                        end_linker=end_linker), dna_data)))
 
+        print("====Inside set_one_hot_matrix::self.one_hot_data.shape:", self.one_hot_data.shape)
         if start_linker:
             print(f'start linker is: {start_linker[-self.linker_sequence_length:]}'
                   f' and the end linker is: {end_linker[:self.linker_sequence_length]}')
@@ -94,7 +92,7 @@ class TrainData:
         """Encode each sequence to OneHot matrix
         1. add linker sequence to the beginning and end of the main HT-SELEX sequence
         2. translate the letters to numbers
-        3. list them and send back since the matrix is formed by "map" method. if the "ACGT"
+        3. list them and send back since the matrix is formed by "map" method. if the "ACGTN"
         won't be added it will be impossible to convert sequences which miss one of the letters
 
         Parameters
@@ -115,7 +113,9 @@ class TrainData:
         DNA_string = start_linker + DNA_string + end_linker + "ACGTN"
         trantab = DNA_string.maketrans('ACGTN', '01234')
         data = list(DNA_string.translate(trantab))
-        return to_categorical(data, num_classes=5)[0:-5]  # returns the matrix without the "ACGTN"
+        encoded = to_categorical(data, num_classes=5)[0:-5]  # returns the matrix without the "ACGTN"
+        print("====Inside one_hot_encoder::encoded.shape:", encoded.shape)
+        return encoded
 
     def linker_quarter_padding(self, modified_matrix):
         """If the user did not supplied primary_selex_sequence please note that we added:
@@ -181,9 +181,9 @@ class PredictData:
         self.one_hot_data = None
 
     def set_one_hot_matrix(self, dna_data):
-        """this method is responsible to produce the OneHot
+        """This method is responsible to produce the OneHot
         encoding for the DNA strings.
-        The OneHOt matrix is used for the convolutional process
+        The OneHot matrix is used for the convolutional process
         If we need to bridge between the prediction to HT-SELEX sequences we will use
         set_redundant_linker_to_avergae method
         Parameters
@@ -192,6 +192,7 @@ class PredictData:
             This is the DNA sequences from the HT-SELEX experiment"""
 
         self.one_hot_data = np.array(list(map(functools.partial(self.one_hot_encoder), dna_data)))
+        print("====Inside set_one_hot_matrix (PredictData)::self.one_hot_data.shape:", self.one_hot_data.shape)
         if self.selex_predict_str_adaptor > 0:
             self.one_hot_data = self.set_redundant_linker_to_avergae(modified_matrix=self.one_hot_data)
 
@@ -200,14 +201,13 @@ class PredictData:
         1. Add "A" in case we need to bridge prediction to HT-SELEX
         2. Translate the letters to numbers
         3. list them and send back since the matrix is formed by "map" method. if the "ACGTN"
-        won't be added it will be impossible to convert sequnces which miss one of the letters
+        won't be added it will be impossible to convert sequences which miss one of the letters
 
         Parameters
         ----------
         DNA_string: str
             This is the DNA sequence. Sent one at a time
         """
-
         if self.selex_predict_str_adaptor != 0:
             DNA_string = "A" * self.selex_predict_str_adaptor + DNA_string + 'A' * self.selex_predict_str_adaptor
 
@@ -216,15 +216,14 @@ class PredictData:
         for i in range(0, self.num_of_str):  ##each substring goes to different element array
             str_arr[i] = DNA_string[i: i + self.selex_str_len]
 
-        # if the "ACGTN"
-        # won't be added it will be impossible to convert sequnces which miss one of the letters
         str_arr[self.num_of_str - 1] = str_arr[self.num_of_str - 1] + "ACGTN"
-
         final_str = list("")
         for i in range(0, self.num_of_str):
             final_str += list(str_arr[i].translate(trantab))
 
-        return to_categorical(final_str, num_classes=5)[0:-5]  # returns the matrix without the "ACGTN"
+        encoded = to_categorical(final_str, num_classes=5)[0:-5]  # returns the matrix without the "ACGTN"
+        print("====Inside one_hot_encoder (PredictData)::encoded.shape:", encoded.shape)
+        return encoded
 
     def set_redundant_linker_to_avergae(self, modified_matrix):
         """If we need to bridge between the prediction file sequences to the HT-SELEX sequences
@@ -246,9 +245,8 @@ class PredictData:
         modified_matrix: np.array
             This is the matrix we are going to convert
         """
-        if len(modified_matrix.shape) == 3:
-            modified_matrix[:, 0:self.selex_predict_str_adaptor, :] = 0.25
-            modified_matrix[:, self.selex_str_len - self.selex_predict_str_adaptor:self.selex_str_len, :] = 0.25
+        modified_matrix[:, 0:self.selex_predict_str_adaptor, :] = 0.25
+        modified_matrix[:, self.selex_str_len - self.selex_predict_str_adaptor:self.selex_str_len, :] = 0.25
         return modified_matrix
 
 def train_data_constructor(learning_files_list):

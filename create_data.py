@@ -95,7 +95,7 @@ class TrainData:
         1. add linker sequence to the beginning and end of the main HT-SELEX sequence
         2. translate the letters to numbers
         3. list them and send back since the matrix is formed by "map" method. if the "ACGT"
-        won't be added it will be impossible to convert sequnces which miss one of the letters
+        won't be added it will be impossible to convert sequences which miss one of the letters
 
         Parameters
         ----------
@@ -181,7 +181,6 @@ class PredictData:
         self.one_hot_data = None
 
     def set_one_hot_matrix(self, dna_data):
-
         """this method is responsible to produce the OneHot
         encoding for the DNA strings.
         The OneHOt matrix is used for the convolutional process
@@ -195,7 +194,6 @@ class PredictData:
         self.one_hot_data = np.array(list(map(functools.partial(self.one_hot_encoder), dna_data)))
         if self.selex_predict_str_adaptor > 0:
             self.one_hot_data = self.set_redundant_linker_to_avergae(modified_matrix=self.one_hot_data)
-
 
     def one_hot_encoder(self, DNA_string):
         """Encode each sequence to OneHot matrix
@@ -248,8 +246,9 @@ class PredictData:
         modified_matrix: np.array
             This is the matrix we are going to convert
         """
-        modified_matrix[:, 0:self.selex_predict_str_adaptor, :] = 0.25
-        modified_matrix[:, self.selex_str_len - self.selex_predict_str_adaptor:self.selex_str_len, :] = 0.25
+        if len(modified_matrix.shape) == 3:
+            modified_matrix[:, 0:self.selex_predict_str_adaptor, :] = 0.25
+            modified_matrix[:, self.selex_str_len - self.selex_predict_str_adaptor:self.selex_str_len, :] = 0.25
         return modified_matrix
 
 def train_data_constructor(learning_files_list):

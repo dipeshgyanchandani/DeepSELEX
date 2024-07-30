@@ -27,7 +27,7 @@ def manage_model(cmd_args, train_data):
         return load_model(cmd_args.loaded_model_location)
 
     elif cmd_args.saved_model_location:
-        model = Model(model_path=cmd_args.saved_model_location, input_shape=(train_data.selex_str_len, 4),
+        model = Model(model_path=cmd_args.saved_model_location, input_shape=(train_data.selex_str_len, 5), #dipesh changes
                       output_size=train_data.selex_files_num)
         # print("Hello...Test...")
         # print("train_data.shape",train_data.shape)
@@ -148,7 +148,7 @@ class Model:
             
     def reshape_one_hot_data(self, data):
         print("=====> Inside reshape one hot data..")
-        target_shape = (259, 4)
+        target_shape = (259, 5) #dipesh changes
         if isinstance(data.one_hot_data, np.ndarray) and data.one_hot_data.dtype == object:
             # Pad sequences to the target length
             padded_sequences = pad_sequences(data.one_hot_data, maxlen=target_shape[0], padding='post', truncating='post', dtype='float32')

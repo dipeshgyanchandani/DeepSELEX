@@ -110,12 +110,12 @@ class TrainData:
             start_linker = kwargs['start_linker'][-self.linker_sequence_length:]
             end_linker = kwargs['end_linker'][:self.linker_sequence_length]
 
-        # if the "ACGT"
-        # won't be added it will be impossible to convert sequnces which miss one of the letters
-        DNA_string = start_linker + DNA_string + end_linker + "ACGT"
-        trantab = DNA_string.maketrans('ACGT', '0123')
+        # if the "ACGTN"
+        # won't be added it will be impossible to convert sequences which miss one of the letters
+        DNA_string = start_linker + DNA_string + end_linker + "ACGTN"
+        trantab = DNA_string.maketrans('ACGTN', '01234')
         data = list(DNA_string.translate(trantab))
-        return to_categorical(data)[0:-4]  # returns the matrix without the "ACGT"
+        return to_categorical(data, num_classes=5)[0:-5]  # returns the matrix without the "ACGTN"
 
     def linker_quarter_padding(self, modified_matrix):
         """If the user did not supplied primary_selex_sequence please note that we added:
@@ -193,108 +193,4 @@ class PredictData:
             This is the DNA sequences from the HT-SELEX experiment"""
 
         self.one_hot_data = np.array(list(map(functools.partial(self.one_hot_encoder), dna_data)))
-        if self.selex_predict_str_adaptor > 0:
-            self.one_hot_data = self.set_redundant_linker_to_avergae(modified_matrix=self.one_hot_data)
-
-
-    def one_hot_encoder(self, DNA_string):
-        """Encode each sequence to OneHot matrix
-        1. Add "A" in case we need to bridge prediction to HT-SELEX
-        2. Translate the letters to numbers
-        3. list them and send back since the matrix is formed by "map" method. if the "ACGT"
-        won't be added it will be impossible to convert sequnces which miss one of the letters
-
-        Parameters
-        ----------
-        DNA_string: str
-            This is the DNA sequence. Sent one at a time
-        """
-
-        if self.selex_predict_str_adaptor != 0:
-            DNA_string = "A" * self.selex_predict_str_adaptor + DNA_string + 'A' * self.selex_predict_str_adaptor
-
-        trantab = DNA_string.maketrans('ACGT', '0123')
-        str_arr = ["" for x in range(self.num_of_str)]
-        for i in range(0, self.num_of_str):  ##each substring goes to different element array
-            str_arr[i] = DNA_string[i: i + self.selex_str_len]
-
-        # if the "ACGT"
-        # won't be added it will be impossible to convert sequnces which miss one of the letters
-        str_arr[self.num_of_str - 1] = str_arr[self.num_of_str - 1] + "ACGT"
-
-        final_str = list("")
-        for i in range(0, self.num_of_str):
-            final_str += list(str_arr[i].translate(trantab))
-
-        return to_categorical(final_str)[0:-4]  # returns the matrix without the "ACGT"
-
-    def set_redundant_linker_to_avergae(self, modified_matrix):
-        """If we need to bridge between the prediction file sequences to the HT-SELEX sequences
-        we use this function. In the one_hot_encoder you can see we add "A" if we need to bridge.
-        Here we just replace all the places where we putted A, which gave something like this:
-        1 1 0 0 1 0 1 1
-        0 0 1 0 0 0 0 0
-        0 0 0 1 0 0 0 0
-        0 0 0 0 0 1 0 0
-        to:
-        0.25 0.25 0 0 1 0 0.25 0.25
-        0.25 0.25 1 0 0 0 0.25 0.25
-        0.25 0.25 0 1 0 0 0.25 0.25
-        0.25 0.25 0 0 0 1 0.25 0.25
-
-        We repeat this process
-        Parameters
-        ----------
-        modified_matrix: np.array
-            This is the matrix we are going to convert
-        """
-        modified_matrix[:, 0:self.selex_predict_str_adaptor, :] = 0.25
-        modified_matrix[:, self.selex_str_len - self.selex_predict_str_adaptor:self.selex_str_len, :] = 0.25
-        return modified_matrix
-
-
-
-def train_data_constructor(learning_files_list):
-    """This function will construct TrainData object.
-     The process is as follows
-     In the first step it will just __init__ the
-    class and afterwards:
-     1. builds full_learning_data_frame which is a DataFrame which is concatenated from all the learning_files_list
-     raw_data
-     2. Shuffle the DataFrame
-     3. __init__ the TrainData class
-     4. Add a OneHot matrix constructed from all the learning files
-     5. Add an enrichment matrix constructed from all the learning files to class
-
-    :parameter
-     - `prediction_file`: PredictionFile object
-     - `train_data`: TrainData object which is necessery to build the PredictData class
-    :returns
-     - `train_data`: TrainData object which will be used in the training process"""
-
-    if learning_files_list is None:
-        train_data = None
-    else:
-        full_learning_data_frame = pd.concat(learning_files_list[i].raw_data for i in range(len(learning_files_list)))
-        full_learning_data_frame = full_learning_data_frame.sample(frac=1)
-        train_data = TrainData(selex_str_len=len(learning_files_list[0].raw_data['DNA_Id'].iloc[0]), selex_files_num=len(learning_files_list))
-        train_data.set_one_hot_matrix(dna_data=full_learning_data_frame['DNA_Id'],
-                                      primary_selex_sequence=learning_files_list[0].primary_selex_sequence)
-        train_data.set_enrichment_matrix(enrichment_data=np.asarray(full_learning_data_frame['cycle_matrix']))
-    return train_data
-
-
-def prediction_data_constructor(prediction_file, model_input_size):
-    """This function will construct PredictData object. In the first step it will just __init the
-    class and afterwards add a OneHot matrix
-    :parameter
-     - `prediction_file`: PredictionFile object
-     - `model_input_size`: int DeepSELEX input model size needed for the prediction file shape
-    :returns
-     - `prediction_data`: PredictData object which will be used in the prediction process"""
-    if prediction_file is None:
-        prediction_data = None
-    else:
-        prediction_data = PredictData(selex_str_len=model_input_size, predict_str_len=len(prediction_file.raw_data['DNA_Id'].iloc[0]))
-        prediction_data.set_one_hot_matrix(dna_data=prediction_file.raw_data['DNA_Id'])
-    return prediction_data
+       

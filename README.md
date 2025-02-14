@@ -1,4 +1,7 @@
-# DeepSELEX
+# Introduction
+DeepSELEX, originally developed to infer DNA-binding preferences of transcription factors using HT-SELEX data, leverages deep neural networks to analyze high-throughput sequencing data. An architectural model is tailored specifically for the theophylline dataset, aiming to enhance predictive capabilities. Initial results demonstrate improved performance over traditional methods, underscoring the potential of generative AI in advancing biomedical research and personalized medicine. This adaptation highlights the versatility of DeepSELEX and its potential application to diverse health-related datasets, paving the way for more accurate and efficient biomedical discoveries. Further research will focus on refining this model and extending its applicability to other critical areas in health science.
+
+# About DeepSELEX
 Inference of DNA-binding preferences from HT-SELEX data using deep neural networks
 
 # Flags
